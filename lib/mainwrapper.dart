@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/navigation/dashboard_nav.dart';
+import 'package:mobile/navigation/map_nav.dart';
+import 'navigation/social_nav.dart';
+
 
 class MainWrapper extends StatefulWidget {
   const MainWrapper({super.key});
@@ -47,15 +51,9 @@ class _MainWrapperState extends State<MainWrapper> {
           child: IndexedStack(
             index: selectedIndex,
             children: [
-              Container(
-                color: Colors.red,
-              ),
-              Container(
-                color: Colors.green,
-              ),
-              Container(
-                color: Colors.blue,
-              ),
+              const Dashboard(),
+              const Map(),
+              const Social(),
             ],
           )
       )

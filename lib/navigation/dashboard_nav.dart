@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import '../views/dashboard/dashboard_main_view.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
@@ -9,24 +9,8 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
-
-  GlobalKey<NavigatorState> dashboardNavigatorKey = GlobalKey<NavigatorState>();
-
   @override
   Widget build(BuildContext context) {
-    return Navigator(
-      key: dashboardNavigatorKey,
-      onGenerateRoute: (RouteSettings settings) {
-        return MaterialPageRoute(
-            builder: (BuildContext context) {
-          if(settings.name == '') {
-            return Container();
-          }
-
-          return Container();
-        },
-        );
-      },
-    );
+    return const DashboardView();
   }
 }
