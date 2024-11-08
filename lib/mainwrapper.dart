@@ -17,9 +17,6 @@ class _MainWrapperState extends State<MainWrapper> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
-
-
       ///BOTTOM NAVIGATION BAR
       bottomNavigationBar: NavigationBar(
         selectedIndex: selectedIndex,
