@@ -20,7 +20,6 @@ class LoginView extends StatelessWidget {
       body: SafeArea(
           child: Center(
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const SizedBox(height: 50),
                 const Icon(
