@@ -1,4 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:mobile/mainwrapper.dart';
 import 'package:mobile/views/login/login_button.dart';
 import 'package:mobile/views/login/login_textfield.dart';
 
@@ -10,8 +13,40 @@ class LoginView extends StatelessWidget {
   final passwordController = TextEditingController();
 
   //sign user in method
-  void signUserIn() {
+  void signUserIn(BuildContext context) async {
 
+    const String apiURL = 'http://localhost:3000/api/login';
+
+    try {
+      final response = await http.post(
+        Uri.parse(apiURL),
+        headers: <String, String> {
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(<String, dynamic> {
+          'username': usernameController.text,
+          'password': passwordController.text,
+        }),
+      );
+
+      if(response.statusCode == 200) {
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+        if (responseData['success']) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Login successful')));
+          Navigator.pushReplacement(context, MainWrapper() as Route<Object?>);
+        } else {
+          // Handle failed login
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Invalid credentials')));
+        }
+      } else {
+        // Handle server errors
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to login')));
+      }
+
+    } catch(error) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $error')));
+    }
+    
   }
 
   @override
@@ -74,7 +109,7 @@ class LoginView extends StatelessWidget {
 
                 //sign in button
                 LoginButton(
-                  onTap: signUserIn,
+                  onTap: () => signUserIn(context),
                 ),
 
                 const SizedBox(height: 20),

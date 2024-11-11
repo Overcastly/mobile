@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 class LoginButton extends StatelessWidget {
 
+  //TODO: REWRITE ONTAP WHEN CONNECTED TO APIS
   final Function()? onTap;
 
   const LoginButton({super.key, required this.onTap,});
