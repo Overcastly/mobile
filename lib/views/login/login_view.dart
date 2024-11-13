@@ -1,9 +1,9 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:mobile/mainwrapper.dart';
 import 'package:mobile/views/login/login_button.dart';
 import 'package:mobile/views/login/login_textfield.dart';
+import 'package:mobile/views/login/register_view.dart';
+import '../../mongodb.dart';
 
 class LoginView extends StatelessWidget {
   LoginView({super.key});
@@ -14,39 +14,19 @@ class LoginView extends StatelessWidget {
 
   //sign user in method
   void signUserIn(BuildContext context) async {
+    String username = usernameController.text.trim();
+    String password = passwordController.text.trim();
 
-    const String apiURL = 'http://localhost:3000/api/login';
+    bool successfulLogin =  await MongoDatabase.doLogin(username, password);
 
-    try {
-      final response = await http.post(
-        Uri.parse(apiURL),
-        headers: <String, String> {
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode(<String, dynamic> {
-          'username': usernameController.text,
-          'password': passwordController.text,
-        }),
+    if(successfulLogin) {
+      Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const MainWrapper())
       );
-
-      if(response.statusCode == 200) {
-        final Map<String, dynamic> responseData = jsonDecode(response.body);
-        if (responseData['success']) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Login successful')));
-          Navigator.pushReplacement(context, MainWrapper() as Route<Object?>);
-        } else {
-          // Handle failed login
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Invalid credentials')));
-        }
-      } else {
-        // Handle server errors
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to login')));
-      }
-
-    } catch(error) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $error')));
+    } else {
+      ///TODO: ADD VALIDATION RESPONSES TO USER
     }
-    
   }
 
   @override
@@ -122,12 +102,20 @@ class LoginView extends StatelessWidget {
                         'Don\'t have an account?',
                         style: TextStyle(color: Colors.grey[700])),
                     const SizedBox(width: 4),
-                    const Text(
+                    GestureDetector(
+                      child: const Text(
                         'Register Here',
                         style: TextStyle(
                           color: Colors.blue,
                           fontWeight: FontWeight.bold,
                         ),
+                      ),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const RegisterView()),
+                        );
+                      },
                     ),
                   ],
                 ),

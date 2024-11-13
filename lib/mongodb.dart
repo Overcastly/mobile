@@ -1,41 +1,70 @@
+import 'dart:convert';
 import 'dart:developer';
 import 'package:mongo_dart/mongo_dart.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:http/http.dart' as http;
 
 class MongoDatabase {
+
+  static Db? _db;
+  static String? _userCollection;
+  static String? _postsCollection;
+  static String? _baseUrl;
+
+  //ESTABLISH CONNECTION TO MONGO ON APP START
   static connect() async {
     await dotenv.load(fileName: ".env");
     var DB_URL = dotenv.env['DB_URL'];
-    var userCollection = dotenv.env['USERS_COLLECTION'];
+    _userCollection = dotenv.env['USERS_COLLECTION']!;
+    _postsCollection = dotenv.env['POSTS_COLLECTION']!;
+    _baseUrl = dotenv.env['BASE_URL'];
+    _db = await Db.create(DB_URL!);
 
-    var db = await Db.create(DB_URL!);
     try {
-      await db.open();
-      inspect(db);
-      print('Connected to database: ${db.databaseName}');
-
-      var collection = db.collection(userCollection!);
-      var information = await collection.findOne(where.eq('username', 'test'));
-
-      // Check if user is found
-      if (information != null) {
-        print('User found: $information');
-      } else {
-        print('No user found with username "test"');
-      }
-
+      await _db?.open();
+      inspect(_db);
+      print('Connected to database: ${_db?.databaseName}');
 
     } catch (e) {
       print('Error: $e');
-    } finally {
-      await db.close();
     }
   }
 
-  static signUserIn() async {
+  //LOGIN
+  static Future<bool> doLogin(String username, String password) async {
+    if (_db == null || !_db!.isConnected) {
+      print('Database is not connected. Please initialize the connection first.');
+      return false;
+    }
 
+    final url = Uri.parse('$_baseUrl/login');
 
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'login': username,
+          'password': password,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        print('Login successful');
+        return true;
+      } else {
+        // Login failed (e.g., invalid credentials)
+        print(response.body);
+        return false;
+      }
+
+    } catch(e) {
+      print('Error during login: $e');
+      return false;
+    }
   }
+
+
 
 
 
