@@ -17,15 +17,17 @@ class LoginView extends StatelessWidget {
     String username = usernameController.text.trim();
     String password = passwordController.text.trim();
 
-    bool successfulLogin =  await MongoDatabase.doLogin(username, password);
+    final error =  await MongoDatabase.doLogin(username, password);
 
-    if(successfulLogin) {
+    if(error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error)),
+      );
+    } else {
       Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const MainWrapper())
       );
-    } else {
-      ///TODO: ADD VALIDATION RESPONSES TO USER
     }
   }
 
@@ -111,9 +113,9 @@ class LoginView extends StatelessWidget {
                         ),
                       ),
                       onTap: () {
-                        Navigator.push(
+                        Navigator.pushReplacement(
                           context,
-                          MaterialPageRoute(builder: (context) => const RegisterView()),
+                          MaterialPageRoute(builder: (context) => RegisterView()),
                         );
                       },
                     ),

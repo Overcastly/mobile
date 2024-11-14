@@ -31,10 +31,10 @@ class MongoDatabase {
   }
 
   //LOGIN
-  static Future<bool> doLogin(String username, String password) async {
+  static Future<String?> doLogin(String username, String password) async {
     if (_db == null || !_db!.isConnected) {
       print('Database is not connected. Please initialize the connection first.');
-      return false;
+      return 'An unexpected error has occurred.';
     }
 
     final url = Uri.parse('$_baseUrl/login');
@@ -51,16 +51,53 @@ class MongoDatabase {
 
       if (response.statusCode == 200) {
         print('Login successful');
-        return true;
+        return null;
       } else {
-        // Login failed (e.g., invalid credentials)
-        print(response.body);
-        return false;
+        final error = jsonDecode(response.body)['error'] as String?;
+        print(error);
+        return error;
       }
 
     } catch(e) {
       print('Error during login: $e');
-      return false;
+      return 'An unexpected error has occurred.';
+    }
+  }
+
+  //REGISTER
+  static Future<String?> doRegister(String firstname, String lastname, String email, String username, String password) async {
+    if (_db == null || !_db!.isConnected) {
+      print('Database is not connected. Please initialize the connection first.');
+      return 'An unexpected error has occurred.';
+    }
+
+    final url = Uri.parse('$_baseUrl/registeruser');
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'username': username,
+          'password': password,
+          'firstName': firstname,
+          'lastName': lastname,
+          'email': email,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        print('Registration successful');
+        return null;
+      } else {
+        final error = jsonDecode(response.body)['error'] as String?;
+        print(error);
+        return error;
+      }
+
+    } catch(e) {
+      print('Error during registration: $e');
+      return 'An unexpected error has occurred.';
     }
   }
 
