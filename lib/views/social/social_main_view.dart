@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'create_post.dart';
 
 class SocialView extends StatelessWidget {
   const SocialView({super.key});
@@ -20,7 +21,9 @@ class SocialView extends StatelessWidget {
             IconButton(
               icon: const Icon(Icons.add),
               //child: const Text('Test'),
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const CreatePost()));
+              },
             ),
           ],
         ),

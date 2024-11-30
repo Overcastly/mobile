@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile/navigation/dashboard_nav.dart';
 import 'package:mobile/navigation/map_nav.dart';
 import 'package:mobile/views/login/login_view.dart';
+import 'package:mobile/views/social/create_post.dart';
 import 'navigation/social_nav.dart';
 
 
@@ -87,7 +88,19 @@ class _MainWrapperState extends State<MainWrapper> {
             children: [
               const Dashboard(),
               const Map(),
-              const Social(),
+              Navigator(
+                onGenerateRoute: (RouteSettings settings) {
+                  Widget page;
+                  switch(settings.name) {
+                    case '/create_post':
+                      page = const CreatePost();
+                      break;
+                    default:
+                      page = const Social();
+                  }
+                  return MaterialPageRoute(builder: (context) => page);
+                },
+              ),
             ],
           )
       )

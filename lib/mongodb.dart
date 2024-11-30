@@ -10,6 +10,7 @@ class MongoDatabase {
   static String? _userCollection;
   static String? _postsCollection;
   static String? _baseUrl;
+  static String? USERNAME;
 
   //ESTABLISH CONNECTION TO MONGO ON APP START
   static connect() async {
@@ -38,6 +39,7 @@ class MongoDatabase {
     }
 
     final url = Uri.parse('$_baseUrl/login');
+    USERNAME = username;
 
     try {
       final response = await http.post(
@@ -101,8 +103,42 @@ class MongoDatabase {
     }
   }
 
+  //CREATE POST
+  static Future<String?> doCreatePost(String title, String description, List<String> tags, double lat, double lng, String imageUrl) async {
+    try {
 
+      final String roundedLat = lat.toStringAsFixed(2);
+      final String roundedLng = lng.toStringAsFixed(2);
 
+      final url = Uri.parse('$_baseUrl/createpost');
+
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'title': title,
+          'body': description,
+          'tags': tags,
+          'latitude': roundedLat,
+          'longitude': roundedLng,
+          'image': imageUrl,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        print('Registration successful');
+        return null;
+      } else {
+        final error = jsonDecode(response.body)['error'] as String?;
+        print(error);
+        return error;
+      }
+
+    } catch (e) {
+      print('Error getting user info: $e');
+      return 'An unexpected error has occurred.';
+    }
+  }
 
 
 
