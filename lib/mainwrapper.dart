@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/mongodb.dart';
 import 'package:mobile/navigation/dashboard_nav.dart';
 import 'package:mobile/navigation/map_nav.dart';
 import 'package:mobile/views/login/login_view.dart';
@@ -31,6 +32,7 @@ class _MainWrapperState extends State<MainWrapper> {
             PopupMenuButton<String>(
               onSelected: (String item) {
                 if (item == 'logout') {
+                  MongoDatabase.clearAuthData();
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(builder: (context) => LoginView()), // Replace with your login page

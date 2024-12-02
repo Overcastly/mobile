@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:mongo_dart/mongo_dart.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MongoDatabase {
 
@@ -10,7 +11,6 @@ class MongoDatabase {
   static String? _userCollection;
   static String? _postsCollection;
   static String? _baseUrl;
-  static String? USERNAME;
 
   //ESTABLISH CONNECTION TO MONGO ON APP START
   static connect() async {
@@ -39,7 +39,6 @@ class MongoDatabase {
     }
 
     final url = Uri.parse('$_baseUrl/login');
-    USERNAME = username;
 
     try {
       final response = await http.post(
@@ -51,9 +50,21 @@ class MongoDatabase {
         }),
       );
 
+
       if (response.statusCode == 200) {
-        print('Login successful');
-        return null;
+        final responseBody = jsonDecode(response.body);
+        final token = responseBody['token'] as String?; // Extract the token.
+        final userId = responseBody['userId'] as String?; // Extract the userId.
+
+        if (token != null && userId != null) {
+          await saveAuthData(token, userId); // Save token and userId.
+          print('Login successful.');
+          return null;
+        } else {
+          print('Token or userId not found in response.');
+          return 'Token or userId missing from server response.';
+        }
+
       } else {
         final error = jsonDecode(response.body)['error'] as String?;
         print(error);
@@ -104,25 +115,36 @@ class MongoDatabase {
   }
 
   //CREATE POST
-  static Future<String?> doCreatePost(String title, String description, List<String> tags, double lat, double lng, String imageUrl) async {
+  static Future<String?> doCreatePost(String title, String description, List<String> tags, double lat, double lng, String? imageUrl) async {
     try {
-
+      final token = await getToken();
       final String roundedLat = lat.toStringAsFixed(2);
       final String roundedLng = lng.toStringAsFixed(2);
 
       final url = Uri.parse('$_baseUrl/createpost');
 
+      Map<String, dynamic> requestBody = {
+        'title': title,
+        'body': description,
+        'tags': tags,
+        'latitude': roundedLat,
+        'longitude': roundedLng,
+      };
+
+      // Add image to request body if it's not null
+      if (imageUrl != null && imageUrl.isNotEmpty) {
+        requestBody['image'] = imageUrl;
+      }
+
+      final headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer: $token',
+      };
+
       final response = await http.post(
         url,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'title': title,
-          'body': description,
-          'tags': tags,
-          'latitude': roundedLat,
-          'longitude': roundedLng,
-          'image': imageUrl,
-        }),
+        headers: headers,
+        body: jsonEncode(requestBody),
       );
 
       if (response.statusCode == 200) {
@@ -140,6 +162,28 @@ class MongoDatabase {
     }
   }
 
+  static Future<void> saveAuthData(String token, String userId) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('userToken', token);
+    await prefs.setString('userId', userId);
+    print('Token and userId saved locally.');
+  }
 
+  static Future<String?> getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('userToken');
+  }
+
+  static Future<String?> getUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('userId');
+  }
+
+  static Future<void> clearAuthData() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('userToken');
+    await prefs.remove('userId');
+    print('Token and userId cleared.');
+  }
 
 }

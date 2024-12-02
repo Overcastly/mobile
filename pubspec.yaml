@@ -43,6 +43,7 @@ dependencies:
   latlong2: ^0.9.1
   easy_stepper: ^0.8.5
   file_picker: ^8.1.4
+  shared_preferences: ^2.3.3
 
 dev_dependencies:
   flutter_test:

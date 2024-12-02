@@ -81,12 +81,6 @@ class _CreatePostState extends State<CreatePost> {
     });
   }
 
-  //Ensures the user cannot proceed to the next step unless title and description are filled
-  bool _canProceedToNextStep() {
-    return _titleController.text.trim().isNotEmpty &&
-        _descriptionController.text.trim().isNotEmpty;
-  }
-
   void _onMapTapped(LatLng position) {
     setState(() {
       selectedLocation = position;
@@ -155,7 +149,7 @@ class _CreatePostState extends State<CreatePost> {
     final List<String> tags = hashtags;
     final double lat = selectedLocation!.latitude;
     final double lng = selectedLocation!.longitude;
-    final String imageUrl = imageBase64String!;
+    final String? imageUrl = selectedImage != null ? imageBase64String : null;
 
     final error = await MongoDatabase.doCreatePost(title, description, tags, lat, lng, imageUrl);
 
