@@ -63,7 +63,7 @@ class PostCard extends StatelessWidget {
 
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
-        print("--JSON RESPONSE DATA--: ${responseData}");
+        print("--JSON RESPONSE DATA--: $responseData");
         print('DEBUG: Complete image data: ${responseData['image']}');
         return responseData;
       } else {

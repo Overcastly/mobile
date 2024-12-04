@@ -60,9 +60,9 @@ class _CreatePostState extends State<CreatePost> {
   void addHashtag() {
     final String hashtag = _hashtagController.text.trim();
 
-    if (hashtag.isNotEmpty && !hashtag.contains(' ') && !(hashtags.contains('$hashtag'))) {
+    if (hashtag.isNotEmpty && !hashtag.contains(' ') && !(hashtags.contains(hashtag))) {
       setState(() {
-        hashtags.add('$hashtag');
+        hashtags.add(hashtag);
       });
       _hashtagController.clear();
     } else {
@@ -155,7 +155,7 @@ class _CreatePostState extends State<CreatePost> {
 
     if(error != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error as String)),
+        SnackBar(content: Text(error)),
       );
     } else {
       Navigator.pop(context);

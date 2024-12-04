@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mobile/mainwrapper.dart';
 import 'package:mobile/views/login/login_view.dart';
 import 'mongodb.dart';
 

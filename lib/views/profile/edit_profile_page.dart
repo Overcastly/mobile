@@ -7,6 +7,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class EditProfilePage extends StatefulWidget {
+  const EditProfilePage({super.key});
+
   @override
   _EditProfilePageState createState() => _EditProfilePageState();
 }
@@ -120,7 +122,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Back'),
+        title: const Text('Back'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -147,12 +149,12 @@ class _EditProfilePageState extends State<EditProfilePage> {
                             ? NetworkImage(_currentProfilePictureUrl!)
                             : null) as ImageProvider?,
                     child: _profilePicture == null && _currentProfilePictureUrl == null
-                        ? Icon(Icons.add_a_photo, size: 50)
+                        ? const Icon(Icons.add_a_photo, size: 50)
                         : null,
                   ),
                 ),
               ),
-              SizedBox(height: 16.0),
+              const SizedBox(height: 16.0),
               TextFormField(
                 controller: _firstNameController,
                 decoration: InputDecoration(
@@ -167,7 +169,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   return null;
                 },
               ),
-              SizedBox(height: 16.0),
+              const SizedBox(height: 16.0),
               TextFormField(
                 controller: _lastNameController,
                 decoration: InputDecoration(
@@ -182,7 +184,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   return null;
                 },
               ),
-              SizedBox(height: 16.0),
+              const SizedBox(height: 16.0),
               TextFormField(
                 controller: _usernameController,
                 decoration: InputDecoration(
@@ -197,16 +199,16 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   return null;
                 },
               ),
-              SizedBox(height: 32.0),
+              const SizedBox(height: 32.0),
               Center(
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.black,
                     foregroundColor: Colors.white,
-                    minimumSize: Size(200, 50),
+                    minimumSize: const Size(200, 50),
                   ),
                   onPressed: _updateProfile,
-                  child: Text('Update Profile'),
+                  child: const Text('Update Profile'),
                 ),
               ),
               if (_updateMessage != null)

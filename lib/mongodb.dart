@@ -15,11 +15,11 @@ class MongoDatabase {
   //ESTABLISH CONNECTION TO MONGO ON APP START
   static connect() async {
     await dotenv.load(fileName: ".env");
-    var DB_URL = dotenv.env['DB_URL'];
+    var dbUrl = dotenv.env['DB_URL'];
     _userCollection = dotenv.env['USERS_COLLECTION']!;
     _postsCollection = dotenv.env['POSTS_COLLECTION']!;
     _baseUrl = dotenv.env['BASE_URL'];
-    _db = await Db.create(DB_URL!);
+    _db = await Db.create(dbUrl!);
 
     try {
       await _db?.open();

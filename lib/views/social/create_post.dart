@@ -127,7 +127,7 @@ class _CreatePostState extends State<CreatePost> {
 
       setState(() {
         selectedImage = imageFile;
-        imageBase64String = "data:image/png;base64," + base64String;
+        imageBase64String = "data:image/png;base64,$base64String";
       });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
