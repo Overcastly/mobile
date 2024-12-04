@@ -60,7 +60,9 @@ class _CreatePostState extends State<CreatePost> {
   void addHashtag() {
     final String hashtag = _hashtagController.text.trim();
 
-    if (hashtag.isNotEmpty && !hashtag.contains(' ') && !(hashtags.contains('#$hashtag'))) {
+    if (hashtag.isNotEmpty &&
+        !hashtag.contains(' ') &&
+        !(hashtags.contains('#$hashtag'))) {
       setState(() {
         hashtags.add('#$hashtag');
       });
@@ -113,7 +115,8 @@ class _CreatePostState extends State<CreatePost> {
       debugPrint("Stacktrace: $stacktrace");
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Failed to pick an image. Please try again.")),
+        const SnackBar(
+            content: Text("Failed to pick an image. Please try again.")),
       );
     }
   }
@@ -137,9 +140,12 @@ class _CreatePostState extends State<CreatePost> {
   }
 
   void createPost(BuildContext context) async {
-    if (_titleController.text.isEmpty || _descriptionController.text.isEmpty || selectedLocation == null) {
+    if (_titleController.text.isEmpty ||
+        _descriptionController.text.isEmpty ||
+        selectedLocation == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please complete all fields before submitting.")),
+        const SnackBar(
+            content: Text("Please complete all fields before submitting.")),
       );
       return;
     }
@@ -151,18 +157,17 @@ class _CreatePostState extends State<CreatePost> {
     final double lng = selectedLocation!.longitude;
     final String? imageUrl = selectedImage != null ? imageBase64String : null;
 
-    final error = await MongoDatabase.doCreatePost(title, description, tags, lat, lng, imageUrl);
+    final error = await MongoDatabase.doCreatePost(
+        title, description, tags, lat, lng, imageUrl);
 
-    if(error != null) {
+    if (error != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(error)),
       );
     } else {
       Navigator.pop(context);
     }
-
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -210,7 +215,8 @@ class _CreatePostState extends State<CreatePost> {
             ],
             //Prevent step navigation if not valid
             onStepReached: (index) {
-              if (index == activeStep) return; // Prevent redundant navigation to the same step
+              if (index == activeStep)
+                return; // Prevent redundant navigation to the same step
 
               if (index == 0 || index < activeStep) {
                 // Allow navigation to previous or current steps
@@ -219,9 +225,12 @@ class _CreatePostState extends State<CreatePost> {
                 });
               } else if (activeStep == 0 && index == 1) {
                 // Step 1: Ensure title and description are filled before moving to "Location"
-                if (_titleController.text.trim().isEmpty || _descriptionController.text.trim().isEmpty) {
+                if (_titleController.text.trim().isEmpty ||
+                    _descriptionController.text.trim().isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Please fill in the title and description to proceed.")),
+                    const SnackBar(
+                        content: Text(
+                            "Please fill in the title and description to proceed.")),
                   );
                 } else {
                   setState(() {
@@ -232,7 +241,9 @@ class _CreatePostState extends State<CreatePost> {
                 // Step 2: Ensure location is selected before moving to "Images"
                 if (selectedLocation == null) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Please select a location on the map to proceed.")),
+                    const SnackBar(
+                        content: Text(
+                            "Please select a location on the map to proceed.")),
                   );
                 } else {
                   setState(() {
@@ -258,26 +269,26 @@ class _CreatePostState extends State<CreatePost> {
                 ElevatedButton(
                   onPressed: activeStep > 0
                       ? () {
-                    setState(() {
-                      activeStep--;
-                    });
-                  }
+                          setState(() {
+                            activeStep--;
+                          });
+                        }
                       : null,
                   child: const Text('Back'),
                 ),
                 ElevatedButton(
                   onPressed: isNextButtonEnabled
                       ? () {
-                    setState(() {
-                      if (activeStep < 2) {
-                        activeStep++;
-                        _validateInputs(); // Re-validate for the next step
-                      } else {
-                        // Handle submission on the last step
-                        createPost(context);
-                      }
-                    });
-                  }
+                          setState(() {
+                            if (activeStep < 2) {
+                              activeStep++;
+                              _validateInputs(); // Re-validate for the next step
+                            } else {
+                              // Handle submission on the last step
+                              createPost(context);
+                            }
+                          });
+                        }
                       : null,
                   child: Text(activeStep == 2 ? 'Post' : 'Next'),
                 ),
@@ -292,7 +303,6 @@ class _CreatePostState extends State<CreatePost> {
   ///Returns content for each step
   Widget _getStepContent(int step) {
     switch (step) {
-
       ///INFO STEP
       case 0:
         return SingleChildScrollView(
@@ -336,7 +346,9 @@ class _CreatePostState extends State<CreatePost> {
                     ),
                     const SizedBox(width: 8),
                     ElevatedButton(
-                      onPressed: _hashtagController.text.trim().isNotEmpty ? addHashtag : null,
+                      onPressed: _hashtagController.text.trim().isNotEmpty
+                          ? addHashtag
+                          : null,
                       child: const Text("Add"),
                     ),
                   ],
@@ -359,12 +371,14 @@ class _CreatePostState extends State<CreatePost> {
                   child: Wrap(
                     spacing: 8.0,
                     runSpacing: 4.0,
-                    children: hashtags.map((tag) => Chip(
-                      label: Text(tag),
-                      onDeleted: () => _removeHashtag(tag),
-                    ),
-                    )
-                    .toList(),
+                    children: hashtags
+                        .map(
+                          (tag) => Chip(
+                            label: Text(tag),
+                            onDeleted: () => _removeHashtag(tag),
+                          ),
+                        )
+                        .toList(),
                   ),
                 ),
               ],
@@ -379,17 +393,20 @@ class _CreatePostState extends State<CreatePost> {
             FlutterMap(
               options: MapOptions(
                 onTap: (tapPosition, latlng) {
-                  _onMapTapped(latlng); // Update `selectedLocation` when the map is tapped
+                  _onMapTapped(
+                      latlng); // Update `selectedLocation` when the map is tapped
                 },
                 initialCenter: const LatLng(28.538336, -81.379234),
                 cameraConstraint: CameraConstraint.contain(
                   bounds: LatLngBounds(
-                    const LatLng(-90, -180.0), const LatLng(90.0, 180.0),
+                    const LatLng(-90, -180.0),
+                    const LatLng(90.0, 180.0),
                   ),
                 ),
                 initialZoom: 10,
                 minZoom: 2,
-                interactionOptions: const InteractionOptions(flags: ~InteractiveFlag.doubleTapZoom),
+                interactionOptions: const InteractionOptions(
+                    flags: ~InteractiveFlag.doubleTapZoom),
               ),
               children: [
                 TileLayer(
@@ -397,9 +414,10 @@ class _CreatePostState extends State<CreatePost> {
                   userAgentPackageName: 'com.overcastly.app',
                 ),
                 if (selectedLocation != null)
-                   MarkerLayer(
+                  MarkerLayer(
                     markers: [
-                      Marker(point: selectedLocation!,
+                      Marker(
+                        point: selectedLocation!,
                         child: const Icon(
                           Icons.location_on,
                           color: Colors.red,
@@ -422,10 +440,10 @@ class _CreatePostState extends State<CreatePost> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                    'Please Insert an Image. This step is optional.',
-                    style: TextStyle(
-                      fontSize: 16,
-                    ),
+                  'Please Insert an Image. This step is optional.',
+                  style: TextStyle(
+                    fontSize: 16,
+                  ),
                 ),
               ],
             ),
@@ -447,19 +465,6 @@ class _CreatePostState extends State<CreatePost> {
                     width: 100,
                     height: 100,
                     fit: BoxFit.cover,
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    'Base64 String:',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: Text(
-                      imageBase64String ?? 'No Base64 String available',
-                      maxLines: 5,
-                      overflow: TextOverflow.ellipsis,
-                    ),
                   ),
                 ],
               ),
