@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
+import '../../mongodb.dart';
 
 class PostDetailView extends StatefulWidget {
   const PostDetailView({
@@ -27,14 +28,14 @@ class _PostDetailViewState extends State<PostDetailView> {
   bool isLoading = true;
   String? error;
   final TextEditingController _replyController = TextEditingController();
-  String? userToken;
-  String? userId;
-  SharedPreferences? _prefs;
+  // String? userToken;
+  // String? userId;
+  // SharedPreferences? _prefs;
 
   @override
   void initState() {
     super.initState();
-    _loadUserData();
+    //_loadUserData();
     _loadPostAndReplies();
   }
 
@@ -93,35 +94,25 @@ class _PostDetailViewState extends State<PostDetailView> {
     return null;
   }
 
-  Future<void> _loadUserData() async {
-    _prefs = await SharedPreferences.getInstance();
-    final userDataString = _prefs?.getString('userData');
-    if (userDataString != null) {
-      final userData = jsonDecode(userDataString);
-      userToken = userData['token'];
-      userId = userData['userId'];
-    } else {
-      userToken = null;
-      userId = null;
-    }
-  }
+  // Future<void> _loadUserData() async {
+  //   _prefs = await SharedPreferences.getInstance();
+  //   final userDataString = _prefs?.getString('userData');
+  //   if (userDataString != null) {
+  //     final userData = jsonDecode(userDataString);
+  //     userToken = userData['token'];
+  //     userId = userData['userId'];
+  //   } else {
+  //     userToken = null;
+  //     userId = null;
+  //   }
+  // }
 
   Future<Map<String, dynamic>> getAuthorInfo(String authorId) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final userDataString = prefs.getString('userData');
-      if (userDataString == null) throw Exception('No user data found');
-
-      final userData = jsonDecode(userDataString);
-      final token = userData['token'];
-
-      final url = '${dotenv.env['BASE_URL']}/users/$authorId';
+      final url = Uri.parse('${dotenv.env['BASE_URL']}/users/$authorId');
       final response = await http.get(
-        Uri.parse(url),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer: $token',
-        },
+        Uri.parse('${dotenv.env['BASE_URL']}/users/$authorId'),
+        headers: {'Content-Type': 'application/json'},
       );
 
       if (response.statusCode == 200) {
@@ -173,9 +164,9 @@ class _PostDetailViewState extends State<PostDetailView> {
   }
 
   Future<void> _submitReply() async {
-    if (_replyController.text.isEmpty || userToken == null || userId == null) {
+    if (_replyController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please sign in to post a reply.')),
+        const SnackBar(content: Text('Please enter a reply')),
       );
       return;
     }
@@ -185,11 +176,18 @@ class _PostDetailViewState extends State<PostDetailView> {
         isLoading = true;
       });
 
+      final token = await MongoDatabase.getToken();
+      final userId = await MongoDatabase.getUserId();
+
+      if (token == null || userId == null) {
+        throw Exception('Not authenticated');
+      }
+
       final response = await http.post(
-        Uri.parse('${dotenv.env['BASE_URL']}/api/createreply'),
+        Uri.parse('${dotenv.env['BASE_URL']}/createreply'),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer: $userToken',
+          'Authorization': 'Bearer $token',
         },
         body: jsonEncode({
           'body': _replyController.text,
@@ -198,27 +196,34 @@ class _PostDetailViewState extends State<PostDetailView> {
         }),
       );
 
+      print('Reply response: ${response.statusCode}');
+      print('Reply body: ${response.body}');
+
       if (response.statusCode == 201) {
         _replyController.clear();
         await _loadPostAndReplies();
-        FocusScope.of(context).unfocus();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Reply posted successfully.')),
-        );
+        if (mounted) {
+          FocusScope.of(context).unfocus();
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Reply posted successfully')),
+          );
+        }
       } else {
-        print('Reply failed: ${response.statusCode} - ${response.body}');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to post reply: ${response.body}')),
-        );
+        throw Exception('Failed to post reply: ${response.body}');
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
+      print('Error posting reply: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
     } finally {
-      setState(() {
-        isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
     }
   }
 
@@ -477,18 +482,7 @@ class _PostDetailViewState extends State<PostDetailView> {
                 const SizedBox(width: 8),
                 IconButton(
                   icon: const Icon(Icons.send),
-                  onPressed: () {
-                    print('Reply button pressed');
-                    if (_replyController.text.isEmpty) {
-                      print('Reply text is empty');
-                      return;
-                    }
-                    if (userToken == null) {
-                      print('User token is null');
-                      return;
-                    }
-                    _submitReply();
-                  },
+                  onPressed: () => _submitReply(),
                 ),
               ],
             ),

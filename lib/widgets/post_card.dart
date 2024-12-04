@@ -181,10 +181,10 @@ class PostCard extends StatelessWidget {
 
               if (imageData != null && imageData!.isNotEmpty)
                 AspectRatio(
-                  aspectRatio: 16 / 9,
+                  aspectRatio: 16 / 8,
                   child: Container(
                     constraints: BoxConstraints(
-                      maxHeight: constraints.maxHeight * 0.4,
+                      maxHeight: constraints.maxHeight * 0.35,
                       maxWidth: constraints.maxWidth,
                     ),
                     child: _buildImage(),
@@ -209,7 +209,7 @@ class PostCard extends StatelessWidget {
                     spacing: 4,
                     runSpacing: 4,
                     children: [
-                      ...displayedTags.map((tag) => Chip(
+                      ...tags.take(2).map((tag) => Chip(
                             label: Text(
                               tag,
                               style: const TextStyle(
@@ -221,10 +221,10 @@ class PostCard extends StatelessWidget {
                             padding: const EdgeInsets.all(2),
                             visualDensity: VisualDensity.compact,
                           )),
-                      if (remainingTags > 0)
+                      if (tags.length > 2)
                         Chip(
                           label: Text(
-                            '+$remainingTags more',
+                            '+${tags.length - 2} more',
                             style: const TextStyle(
                                 fontSize: 12, color: Colors.white),
                           ),

@@ -6,39 +6,40 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class MongoDatabase {
-
   static Db? _db;
   static String? _userCollection;
   static String? _postsCollection;
   static String? _baseUrl;
 
-  //ESTABLISH CONNECTION TO MONGO ON APP START
   static connect() async {
     await dotenv.load(fileName: ".env");
     var dbUrl = dotenv.env['DB_URL'];
-    _userCollection = dotenv.env['USERS_COLLECTION']!;
-    _postsCollection = dotenv.env['POSTS_COLLECTION']!;
+    _userCollection = dotenv.env['USERS_COLLECTION'];
+    _postsCollection = dotenv.env['POSTS_COLLECTION'];
     _baseUrl = dotenv.env['BASE_URL'];
+    print('Connecting to MongoDB with URL: $dbUrl');
+    print('Base URL set to: $_baseUrl');
     _db = await Db.create(dbUrl!);
 
     try {
       await _db?.open();
       inspect(_db);
       print('Connected to database: ${_db?.databaseName}');
-
     } catch (e) {
       print('Error: $e');
     }
   }
 
-  //LOGIN
   static Future<String?> doLogin(String username, String password) async {
+    await dotenv.load(fileName: ".env");
+    print('Making login request to: ${dotenv.env['BASE_URL']}/login');
+    
     if (_db == null || !_db!.isConnected) {
       print('Database is not connected. Please initialize the connection first.');
       return 'An unexpected error has occurred.';
     }
 
-    final url = Uri.parse('$_baseUrl/login');
+    final url = Uri.parse('${dotenv.env['BASE_URL']}/login');
 
     try {
       final response = await http.post(
@@ -50,41 +51,40 @@ class MongoDatabase {
         }),
       );
 
-
       if (response.statusCode == 200) {
         final responseBody = jsonDecode(response.body);
-        final token = responseBody['token'] as String?; // Extract the token.
-        final userId = responseBody['userId'] as String?; // Extract the userId.
+        final token = responseBody['token'] as String?;
+        final userId = responseBody['userId'] as String?;
 
         if (token != null && userId != null) {
-          await saveAuthData(token, userId); // Save token and userId.
+          await saveAuthData(token, userId);
           print('Login successful.');
           return null;
         } else {
           print('Token or userId not found in response.');
           return 'Token or userId missing from server response.';
         }
-
       } else {
         final error = jsonDecode(response.body)['error'] as String?;
         print(error);
         return error;
       }
-
-    } catch(e) {
+    } catch (e) {
       print('Error during login: $e');
       return 'An unexpected error has occurred.';
     }
   }
 
-  //REGISTER
-  static Future<String?> doRegister(String firstname, String lastname, String email, String username, String password) async {
+  static Future<String?> doRegister(String firstname, String lastname, String email,
+      String username, String password) async {
+    await dotenv.load(fileName: ".env");
+    
     if (_db == null || !_db!.isConnected) {
       print('Database is not connected. Please initialize the connection first.');
       return 'An unexpected error has occurred.';
     }
 
-    final url = Uri.parse('$_baseUrl/registeruser');
+    final url = Uri.parse('${dotenv.env['BASE_URL']}/registeruser');
 
     try {
       final response = await http.post(
@@ -107,21 +107,22 @@ class MongoDatabase {
         print(error);
         return error;
       }
-
-    } catch(e) {
+    } catch (e) {
       print('Error during registration: $e');
       return 'An unexpected error has occurred.';
     }
   }
 
-  //CREATE POST
-  static Future<String?> doCreatePost(String title, String description, List<String> tags, double lat, double lng, String? imageUrl) async {
+  static Future<String?> doCreatePost(String title, String description,
+      List<String> tags, double lat, double lng, String? imageUrl) async {
+    await dotenv.load(fileName: ".env");
+    
     try {
       final token = await getToken();
       final String roundedLat = lat.toStringAsFixed(2);
       final String roundedLng = lng.toStringAsFixed(2);
 
-      final url = Uri.parse('$_baseUrl/createpost');
+      final url = Uri.parse('${dotenv.env['BASE_URL']}/createpost');
 
       Map<String, dynamic> requestBody = {
         'title': title,
@@ -131,7 +132,6 @@ class MongoDatabase {
         'longitude': roundedLng,
       };
 
-      // Add image to request body if it's not null
       if (imageUrl != null && imageUrl.isNotEmpty) {
         requestBody['image'] = imageUrl;
       }
@@ -148,16 +148,15 @@ class MongoDatabase {
       );
 
       if (response.statusCode == 200) {
-        print('Registration successful');
+        print('Post creation successful');
         return null;
       } else {
         final error = jsonDecode(response.body)['error'] as String?;
         print(error);
         return error;
       }
-
     } catch (e) {
-      print('Error getting user info: $e');
+      print('Error creating post: $e');
       return 'An unexpected error has occurred.';
     }
   }
@@ -185,5 +184,4 @@ class MongoDatabase {
     await prefs.remove('userId');
     print('Token and userId cleared.');
   }
-
 }
