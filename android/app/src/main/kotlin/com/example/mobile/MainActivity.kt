@@ -1,4 +1,4 @@
-package com.example.mobile
+package com.overcastly.app
 
 import io.flutter.embedding.android.FlutterActivity
 
