@@ -11,6 +11,6 @@ class Dashboard extends StatefulWidget {
 class _DashboardState extends State<Dashboard> {
   @override
   Widget build(BuildContext context) {
-    return DashboardView(key: widget.key);
+    return const DashboardView();
   }
 }

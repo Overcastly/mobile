@@ -13,8 +13,6 @@ class PostCard extends StatelessWidget {
   final List<String> tags;
   final String postId;
   final DateTime createdAt;
-  final String? userToken;
-  final String? userId;
 
   const PostCard({
     super.key,
@@ -25,8 +23,6 @@ class PostCard extends StatelessWidget {
     required this.tags,
     required this.postId,
     required this.createdAt,
-    required this.userToken,
-    required this.userId,
   });
 
   bool isValidUrl(String str) {
@@ -40,6 +36,14 @@ class PostCard extends StatelessWidget {
       final userDataString = prefs.getString('userData');
       print('DEBUG: UserData String from SharedPreferences: $userDataString');
 
+      // if (userDataString == null) throw Exception('No user data found');
+
+      // final userData = jsonDecode(userDataString);
+      // print('DEBUG: Parsed UserData: $userData');
+
+      // final token = userData['token'];
+      // print('DEBUG: Token: $token');
+
       final url = '${dotenv.env['BASE_URL']}/users/$authorId';
       print('DEBUG: Making API call to: $url');
       print('DEBUG: With headers: ${{
@@ -50,6 +54,7 @@ class PostCard extends StatelessWidget {
         Uri.parse(url),
         headers: {
           'Content-Type': 'application/json',
+          // 'Authorization': 'Bearer: $token',
         },
       );
 
@@ -103,11 +108,7 @@ class PostCard extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => PostDetailView(
-              postId: postId,
-              userToken: userToken,
-              userId: userId,
-            ),
+            builder: (context) => PostDetailView(postId: postId),
           ),
         );
       },
@@ -283,8 +284,49 @@ class PostCard extends StatelessWidget {
         );
       }
       return const SizedBox.shrink();
+
+      // String cleanImageData = imageData!;
+      // if (cleanImageData.contains(',')) {
+      //   cleanImageData = cleanImageData.split(',')[1];
+      // }
+      // cleanImageData = cleanImageData.trim();
+
+      // final imageBytes = base64.decode(cleanImageData);
+
+      // return Image.memory(
+      //   imageBytes,
+      //   fit: BoxFit.cover,
+      //   gaplessPlayback: true,
+      //   frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+      //     if (frame == null) {
+      //       return const Center(
+      //         child: CircularProgressIndicator(),
+      //       );
+      //     }
+      //     return child;
+      //   },
+      //   errorBuilder: (context, error, stackTrace) {
+      //     print('Error loading image: $error');
+      //     print('Stack trace: $stackTrace');
+      //     return const Center(
+      //       child: Icon(
+      //         Icons.error_outline,
+      //         color: Colors.red,
+      //         size: 24,
+      //       ),
+      //     );
+      //   },
+      // );
     } catch (e) {
       print('Error processing image: $e');
+      // print('Stack trace: $stackTrace');
+      // return const Center(
+      //   child: Icon(
+      //     Icons.error_outline,
+      //     color: Colors.red,
+      //     size: 24,
+      //   ),
+      // );
       return const SizedBox.shrink();
     }
   }

@@ -60,9 +60,9 @@ class _CreatePostState extends State<CreatePost> {
   void addHashtag() {
     final String hashtag = _hashtagController.text.trim();
 
-    if (hashtag.isNotEmpty && !hashtag.contains(' ') && !(hashtags.contains('#$hashtag'))) {
+    if (hashtag.isNotEmpty && !hashtag.contains(' ') && !(hashtags.contains('$hashtag'))) {
       setState(() {
-        hashtags.add('#$hashtag');
+        hashtags.add('$hashtag');
       });
       _hashtagController.clear();
     } else {
@@ -127,7 +127,7 @@ class _CreatePostState extends State<CreatePost> {
 
       setState(() {
         selectedImage = imageFile;
-        imageBase64String = "data:image/png;base64," + base64String;
+        imageBase64String = base64String;
       });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -155,7 +155,7 @@ class _CreatePostState extends State<CreatePost> {
 
     if(error != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error)),
+        SnackBar(content: Text(error as String)),
       );
     } else {
       Navigator.pop(context);

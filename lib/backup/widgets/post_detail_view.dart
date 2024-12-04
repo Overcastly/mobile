@@ -6,16 +6,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 
 class PostDetailView extends StatefulWidget {
+  final String postId;
+
   const PostDetailView({
     super.key,
     required this.postId,
-    required this.userToken,
-    required this.userId,
   });
-
-  final String postId;
-  final String? userToken;
-  final String? userId;
 
   @override
   State<PostDetailView> createState() => _PostDetailViewState();
@@ -29,7 +25,6 @@ class _PostDetailViewState extends State<PostDetailView> {
   final TextEditingController _replyController = TextEditingController();
   String? userToken;
   String? userId;
-  SharedPreferences? _prefs;
 
   @override
   void initState() {
@@ -94,33 +89,30 @@ class _PostDetailViewState extends State<PostDetailView> {
   }
 
   Future<void> _loadUserData() async {
-    _prefs = await SharedPreferences.getInstance();
-    final userDataString = _prefs?.getString('userData');
+    final prefs = await SharedPreferences.getInstance();
+    final userDataString = prefs.getString('userData');
     if (userDataString != null) {
       final userData = jsonDecode(userDataString);
       userToken = userData['token'];
       userId = userData['userId'];
-    } else {
-      userToken = null;
-      userId = null;
     }
   }
 
   Future<Map<String, dynamic>> getAuthorInfo(String authorId) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final userDataString = prefs.getString('userData');
-      if (userDataString == null) throw Exception('No user data found');
+      // final userDataString = prefs.getString('userData');
+      // if (userDataString == null) throw Exception('No user data found');
 
-      final userData = jsonDecode(userDataString);
-      final token = userData['token'];
+      // final userData = jsonDecode(userDataString);
+      // final token = userData['token'];
 
       final url = '${dotenv.env['BASE_URL']}/users/$authorId';
       final response = await http.get(
         Uri.parse(url),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer: $token',
+          //'Authorization': 'Bearer: $token',
         },
       );
 
@@ -173,20 +165,11 @@ class _PostDetailViewState extends State<PostDetailView> {
   }
 
   Future<void> _submitReply() async {
-    if (_replyController.text.isEmpty || userToken == null || userId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please sign in to post a reply.')),
-      );
-      return;
-    }
+    if (_replyController.text.isEmpty || userToken == null) return;
 
     try {
-      setState(() {
-        isLoading = true;
-      });
-
       final response = await http.post(
-        Uri.parse('${dotenv.env['BASE_URL']}/api/createreply'),
+        Uri.parse('${dotenv.env['BASE_URL']}/createreply'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer: $userToken',
@@ -194,31 +177,22 @@ class _PostDetailViewState extends State<PostDetailView> {
         body: jsonEncode({
           'body': _replyController.text,
           'originalPostId': widget.postId,
-          'authorId': userId,
         }),
       );
 
       if (response.statusCode == 201) {
         _replyController.clear();
-        await _loadPostAndReplies();
+        _loadPostAndReplies();
         FocusScope.of(context).unfocus();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Reply posted successfully.')),
-        );
       } else {
-        print('Reply failed: ${response.statusCode} - ${response.body}');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to post reply: ${response.body}')),
+          const SnackBar(content: Text('Failed to post reply')),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: $e')),
       );
-    } finally {
-      setState(() {
-        isLoading = false;
-      });
     }
   }
 
@@ -477,18 +451,7 @@ class _PostDetailViewState extends State<PostDetailView> {
                 const SizedBox(width: 8),
                 IconButton(
                   icon: const Icon(Icons.send),
-                  onPressed: () {
-                    print('Reply button pressed');
-                    if (_replyController.text.isEmpty) {
-                      print('Reply text is empty');
-                      return;
-                    }
-                    if (userToken == null) {
-                      print('User token is null');
-                      return;
-                    }
-                    _submitReply();
-                  },
+                  onPressed: _submitReply,
                 ),
               ],
             ),
